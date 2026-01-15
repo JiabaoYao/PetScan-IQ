@@ -45,13 +45,27 @@ source .server_venv/bin/activate
 pip3 install fastapi uvicorn google-generativeai python-dotenv
 ```
 
-3. Start the server: python -m app.main or uvicorn app.main:app --reload --port 9000
+3. Start the server
+```
+python -m app.main
+or
+uvicorn app.main:app --reload --port 8000
+```
 
 4. Test it: Open your browser to http://127.0.0.1:8000/docs.
 You will see the interactive Swagger UI where you can test your /api/v1/chat endpoint.
 
 5. Full Stack Testing
-* Back-end: uvicorn app.main:app --reload --port 9000
-* Front-end: 
-npm create vite@latest .
+* Back-end: uvicorn app.main:app --reload --port 8000
+* Front-end:
+```
+npm create vite@latest . 
 npm run dev
+```
+* Check API Key Validation
+```
+curl 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=GEMINI_API_KEY' \
+    -H 'Content-Type: application/json' \
+    -X POST \
+    -d '{ "contents": [{ "parts":[{"text": "Hi"}]}]}'
+```

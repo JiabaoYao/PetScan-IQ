@@ -5,6 +5,7 @@ import "./style.css";
 const API_URL = "http://127.0.0.1:8000/api/chat";
 
 function Chatbot() {
+    const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('')
     const [msgs, setMsgs] = useState([{"sender": "Sam", "message": "Hello! How can I help?"}])
 
@@ -39,13 +40,16 @@ function Chatbot() {
 
     return (
             <div className="chatbox">
-                <div className="chatbox__support">
+                {isOpen && <div className={`chatbox__support ${isOpen ? 'chatbox--active' : ''}`}>
                     <div className="chatbox__header">
                         <div className="chatbox__image--header">
-                            <img src="https://img.icons8.com/color/1200/person-male.jpg" alt="Sam" />
+                            <img src="https://cdn-icons-png.flaticon.com/128/2206/2206368.png" alt="Sam" />
                         </div>
                         <div className="chatbox__content--header">
                             <h4 className="chatbox__heading--header">Chat support</h4>
+                        </div>
+                        <div className="chatbox__heading--button">
+                            <button onClick={() => setIsOpen(false)}>Close</button>
                         </div>
                     </div>
 
@@ -66,7 +70,11 @@ function Chatbot() {
                         />
                         <button onClick={handleSend}>Send</button>
                     </div>
-                </div>
+                </div>}
+
+                {!isOpen &&<div className="chatbox__button" onClick={() => setIsOpen(!isOpen)}>
+                    <img src="https://cdn-icons-png.flaticon.com/128/2206/2206368.png" alt="Chat" />
+                </div>}
             </div>
     );
 }

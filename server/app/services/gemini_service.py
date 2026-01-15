@@ -9,7 +9,7 @@ load_dotenv()
 
 class GeminiService:
     def __init__(self):
-        self.model_id = "gemini-1.5-flash"
+        self.model_id = "gemini-2.5-flash"
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
         
     async def generate_response(self, request: ChatRequest, context: str):
@@ -20,7 +20,7 @@ class GeminiService:
                     f"Context: {context}\n\n"
                     f"User Question: {request.message}"
                 )
-        response = self.client.generate_content(model=self.model_id, contents=prompt)
+        response = self.client.models.generate_content(model=self.model_id, contents=prompt)
         
         return response.text
         
