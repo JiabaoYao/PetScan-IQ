@@ -1,5 +1,7 @@
 import { useState } from "react";
 import "./style.css"; 
+import { X } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 // Backend API_URL
 const API_URL = "http://127.0.0.1:8000/api/chat";
@@ -9,7 +11,10 @@ function Chatbot() {
     const [input, setInput] = useState('')
     const [msgs, setMsgs] = useState([{"sender": "Sam", "message": "Hello! How can I help?"}])
 
-    const handleSend = async () => {
+    const handleSend = async (e) => {
+        // 1. 防止表单提交导致页面刷新
+        if (e) e.preventDefault();
+
         if (input.trim() === "") return;
         
         const userMsg = {"sender": "User", "message": input}
@@ -49,27 +54,27 @@ function Chatbot() {
                             <h4 className="chatbox__heading--header">Chat support</h4>
                         </div>
                         <div className="chatbox__heading--button">
-                            <button onClick={() => setIsOpen(false)}>Close</button>
+                            <button onClick={() => setIsOpen(false)}><X size={20} strokeWidth={2.5} /></button>
                         </div>
                     </div>
 
                     <div className="chatbox__messages">
                         {msgs.map((msg, index) => (
                             <div key={index} className={`messages__item messages__item--${msg.sender === "User" ? "visitor" : "operator"}`}>
-                                <strong>{msg.sender}:</strong> {msg.message}
+                                <strong>{msg.sender}:</strong> <ReactMarkdown>{msg.message}</ReactMarkdown>
                             </div>
                         ))}
                     </div>
 
-                    <div className="chatbox__footer">
+                    <form className="chatbox__footer" onSubmit={handleSend}>
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Type your message..."
                         />
-                        <button onClick={handleSend}>Send</button>
-                    </div>
+                        <button type="submit">Send</button>
+                    </form>
                 </div>}
 
                 {!isOpen &&<div className="chatbox__button" onClick={() => setIsOpen(!isOpen)}>
