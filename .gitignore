@@ -1,0 +1,14 @@
+# Python
+server/.server_venv/
+server/__pycache__/
+server/app/__pycache__/
+server/app/api/__pycache__/
+server/app/models/__pycache__/
+server/app/services/__pycache__/
+server/.env
+
+# Node / Frontend
+client/node_modules/
+client/dist/
+client/.env
+client/.gitignore

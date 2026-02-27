@@ -1,4 +1,4 @@
-from app.models.chat_models import ChatRequest
+from app.models.chat_models import ChatRequest, AnalyzeRequest
 # import google.generativeai as genai
 import os
 from google import genai
@@ -23,4 +23,36 @@ class GeminiService:
         response = self.client.models.generate_content(model=self.model_id, contents=prompt)
         
         return response.text
+    
+    
+    async def diagnose(self, request: ChatRequest):
+        prompt = (
+            f"You are a veterinary diagnostic assistant. Based on the following symptoms, provide a possible diagnosis and recommended next steps for the pet owner.\n\n"
+            f"Symptoms: {request.message}\n {response.images if request.images else ''}"
+        )
         
+        response = self.client.models.generate_content(model=self.model_id, contents=prompt)
+        
+        return response.text
+    
+    
+    async def analyze_pet_mood(self, request: AnalyzeRequest):
+        prompt = (
+            f"You are a pet mood analyzer. Based on the image of the pet provided, analyze the pet's mood and provide insights into its emotional state.\n\n"
+            f"Image URL: {request.image_url}"
+        )
+        
+        response = self.client.models.generate_content(model=self.model_id, contents=prompt)
+        
+        return response.text
+    
+    
+    async def identifyBreed(self, request: AnalyzeRequest):
+        prompt = (
+            f"You are a pet breed identifier. Based on the following image of the pet, identify the most likely breed(s) and provide a brief description of each.\n\n"
+            f"Image URL: {request.image_url}"
+        )
+        
+        response = self.client.models.generate_content(model=self.model_id, contents=prompt)
+        
+        return response.text
