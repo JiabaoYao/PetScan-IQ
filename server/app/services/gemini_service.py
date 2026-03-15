@@ -1,4 +1,4 @@
-from app.models.chat_models import ChatRequest, AnalyzeRequest
+from app.models.chatbot import ChatRequest, AnalyzeRequest
 # import google.generativeai as genai
 import os
 from google import genai

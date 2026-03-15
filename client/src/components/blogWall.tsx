@@ -3,31 +3,33 @@ import { Post } from '../types';
 
 interface BlogWallProps {
   posts: Post[];
-  onAddPost: (content: string, image?: string) => void;
+  onAddPost: (content: string, title?: string, image?: string) => void;
+  onDeletePost: (blog_id: string) => void;
 }
 
-const BlogWall: React.FC<BlogWallProps> = ({posts, onAddPost}) => {
+const BlogWall: React.FC<BlogWallProps> = ({ posts, onAddPost, onDeletePost }) => {
     const [newPost, setNewPost] = useState("");
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [newTitle, setNewTitle] = useState("");
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            if (selectedImage) {
-                URL.revokeObjectURL(selectedImage); // clean up old image URL to prevent memory leaks
-            }
-
-            const url = URL.createObjectURL(e.target.files[0]);
-            setSelectedImage(url);
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (selectedImage?.startsWith("blob:")) {
+            URL.revokeObjectURL(selectedImage);
         }
+        const reader = new FileReader();
+        reader.onload = () => setSelectedImage(reader.result as string);
+        reader.readAsDataURL(file);
     }
 
     const handleAddPost = (e: React.FormEvent) => {
         e.preventDefault();
-        if (newPost.trim()) {
-            onAddPost(newPost, selectedImage || undefined);
-            setNewPost("");
-            setSelectedImage(null);
-        }
+        if (!newPost.trim() && !selectedImage) return;
+        onAddPost(newPost, newTitle || undefined, selectedImage || undefined);
+        setNewPost("");
+        setNewTitle("");
+        setSelectedImage(null);
     }
 
     return (
@@ -71,14 +73,17 @@ const BlogWall: React.FC<BlogWallProps> = ({posts, onAddPost}) => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar" style={{ backgroundColor: 'light-gray' }}>
-                {posts.map((post) => (
-                <div key={post.id} className="blog-card animate-fade-in-up">
+                {(posts ?? []).map((post) => (
+                <div key={post.blog_id} className="blog-card animate-fade-in-up">
                     <div className="flex items-center gap-3 mb-3">
                         <img src={post.avatar} alt={post.author} className="w-10 h-10 rounded-full border border-slate-100" />
                         <div>
                             <h4 className="font-bold text-slate-800 text-sm">{post.author}</h4>
                             <p className="text-xs text-slate-400">{new Date(post.timestamp).toLocaleDateString()}</p>
                         </div>
+                        <button onClick={() => onDeletePost(post.blog_id)} className="text-red-500 hover:text-red-700 absolute right-8 top-8">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
                     </div>
                     <p className="text-slate-600 text-sm mb-3 leading-relaxed">{post.content}</p>
                     {post.image && (

@@ -1,26 +1,30 @@
 import Chatbot from "./components/chatbot";
-import BlogWall from "./components/blogwall";
+import BlogWall from "./components/blogWall";
 import FeatureBlocks from "./components/featureblocks";
 import { Post } from "./types";
 import React, {useState, useEffect} from "react";
 
 const STORAGE_KEY = 'pawpals_community_posts_v1';
+// Use relative /api so Vite dev server proxies to backend (no direct connection to :8000 from browser)
+const API_BASE = '/api';
 
 const INITIAL_POSTS: Post[] = [
   {
-    id: '1',
+    blog_id: '1',
     author: 'Barkley_99',
     avatar: 'https://picsum.photos/seed/user1/100',
     content: "Just took Luna for her first beach walk! She absolutely loved the waves! 🌊🐕",
+    title: "First Beach Walk!",
     image: 'https://picsum.photos/seed/dog1/600/400',
     timestamp: new Date(Date.now() - 3600000),
     likes: 24
   },
   {
-    id: '2',
+    blog_id: '2',
     author: 'CatPersonExtraordinaire',
     avatar: 'https://picsum.photos/seed/user2/100',
     content: "Does anyone have recommendations for the best catnip? My cat seems unimpressed with the store-bought ones. 🐈⬛",
+    title: "Best Catnip Recommendations?",
     timestamp: new Date(Date.now() - 7200000),
     likes: 12
   }
@@ -28,40 +32,96 @@ const INITIAL_POSTS: Post[] = [
 
 const App: React.FC = () => {
   // Initialize state from local storage or fallback to defaults
-  const [posts, setPosts] = useState<Post[]>(() => {
-    const savedPosts = localStorage.getItem(STORAGE_KEY);
-    if (savedPosts) {
-      try {
-        const parsed = JSON.parse(savedPosts);
-        return parsed.map((p: any) => ({ 
-          ...p, 
-          timestamp: new Date(p.timestamp) 
-        }));
-      } catch (e) {
-        return INITIAL_POSTS;
-      }
-    }
-    return INITIAL_POSTS;
+  const [posts, setPosts] = useState<Post[]>([]);
+  /** Map API blog shape (created_at, no avatar) to frontend Post shape (timestamp, avatar). */
+  const parseDate = (v: unknown): Date => {
+    if (v == null) return new Date();
+    if (typeof v === 'string') return new Date(v);
+    if (typeof v === 'object' && v !== null && '$date' in v) return new Date((v as { $date: string }).$date);
+    return new Date();
+  };
+
+  const mapBlogToPost = (raw: Record<string, unknown>): Post => ({
+    blog_id: String(raw.blog_id ?? raw.id ?? ''),
+    author: String(raw.author ?? ''),
+    avatar: String(raw.avatar ?? 'https://picsum.photos/seed/user/100'),
+    content: String(raw.content ?? ''),
+    title: raw.title != null ? String(raw.title) : undefined,
+    image: raw.image != null && raw.image !== '' ? String(raw.image) : undefined,
+    timestamp: parseDate(raw.timestamp ?? raw.created_at),
+    likes: Number(raw.likes ?? 0),
   });
 
-  // Sync posts to local storage whenever the state changes
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-  }, [posts]);
+  const refetchPosts = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/blogs`, { method: 'GET' });
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('Error fetching posts:', response.status, text);
+        setPosts(INITIAL_POSTS);
+        return;
+      }
+      const data = await response.json();
+      const list = Array.isArray(data) ? data : [];
+      setPosts(list.map(mapBlogToPost));
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      setPosts(INITIAL_POSTS); // Fallback to default posts on error
+    }
+  };
 
-  const addPost = (content: string, image?: string) => {
+  useEffect(() => {
+    refetchPosts();
+  }, []);
+
+  const addPost = async(content: string, title?:string, image?: string) => {
     const newPost: Post = {
-      id: Math.random().toString(36).substr(2, 9),
+      blog_id: Math.random().toString(36).substr(2, 9),
       author: 'You',
       avatar: 'https://picsum.photos/seed/me/100',
       content,
-      image,
+      title,
+      image: image ?? undefined,
       timestamp: new Date(),
       likes: 0
     };
-    setPosts([newPost, ...posts]);
-  };
 
+    try {
+      const res = await fetch(`${API_BASE}/blogs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newPost)
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        console.error('Error adding post:', res.status, text);
+        return;
+      }
+    } catch (error) {
+      console.error('Error adding post:', error);
+      return;
+    }
+    await refetchPosts();
+  }
+
+  const deletePost = async (blog_id: string) => {
+    console.log(posts);
+    try {
+      const res = await fetch(`${API_BASE}/blogs/${blog_id}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        throw new Error('Failed to delete post');
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+
+    await refetchPosts();
+  }
+  
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-slate-50">
       {/* Header */}
@@ -89,7 +149,7 @@ const App: React.FC = () => {
       <main className="flex-1 flex overflow-hidden">
         {/* Left Sidebar: Blog Wall */}
         <div className="w-500px mx-auto" style={{ backgroundColor: 'shimmering-orange' }}>
-          <BlogWall posts={posts} onAddPost={addPost}/>
+          <BlogWall posts={posts} onAddPost={addPost} onDeletePost={deletePost}/>
         </div>
 
         {/* Middle Section: AI Tools */}

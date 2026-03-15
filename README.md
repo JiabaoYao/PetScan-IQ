@@ -11,7 +11,8 @@ pawguide-ai/
 │   │   ├── core/            # Config, security, constants
 │   │   │   └── config.py
 │   │   ├── models/          # Data models (Pydantic, SQLAlchemy)
-│   │   │   └── pet.py
+│   │   │   └── blog.py
+│   │   │   └── chatbot.py
 │   │   ├── services/        # Business logic & AI Engine
 │   │   │   ├── ai_service.py (Formerly engine.py)
 │   │   │   └── pet_service.py
@@ -43,6 +44,7 @@ source .server_venv/bin/activate
 2. Install dependencies
 ```
 pip3 install fastapi uvicorn google-generativeai python-dotenv
+pip3 install -r requirements.txt
 ```
 
 3. Start the server

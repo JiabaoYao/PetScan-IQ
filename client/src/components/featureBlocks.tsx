@@ -16,7 +16,7 @@ const FeatureBlocks: React.FC = () => {
         if (!prompt) return;
         setLoading('HEALTH');
         try {
-          const response = await fetch("http://127.0.0.1:8000/api/diagnose", {
+          const response = await fetch("/api/diagnose", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -49,7 +49,7 @@ const FeatureBlocks: React.FC = () => {
             const base64 = (reader.result as string).split(',')[1];
             setLoading('ANALYST');
             try {
-                const response = await fetch("http://127.0.0.1:8000/api/analyze-mood", {
+                const response = await fetch("/api/analyze-mood", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -86,7 +86,7 @@ const FeatureBlocks: React.FC = () => {
             const base64 = (reader.result as string).split(',')[1];
             setLoading('BREED');
             try {
-              const response = await fetch("http://127.0.0.1:8000/api/identify-breed", {
+              const response = await fetch("/api/identify-breed", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",

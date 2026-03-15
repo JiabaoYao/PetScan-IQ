@@ -1,9 +1,10 @@
 
 export interface Post {
-  id: string;
+  blog_id: string;
   author: string;
   avatar: string;
   content: string;
+  title?: string;
   image?: string;
   timestamp: Date;
   likes: number;

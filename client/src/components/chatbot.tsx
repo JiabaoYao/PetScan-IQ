@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 // Backend API_URL
-const API_URL = "http://127.0.0.1:8000/api/chat";
+const API_URL = "/api/chat";
 
 function Chatbot() {
     const [isOpen, setIsOpen] = useState(false);
