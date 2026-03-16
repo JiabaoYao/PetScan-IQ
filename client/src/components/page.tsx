@@ -1,8 +1,9 @@
-import Chatbot from "./components/chatbot";
-import BlogWall from "./components/blogWall";
-import FeatureBlocks from "./components/featureblocks";
-import { Post } from "./types";
+import Chatbot from "../components/chatbot";
+import BlogWall from "../components/blogWall";
+import FeatureBlocks from "../components/featureblocks";
+import { Post } from "../types";
 import React, {useState, useEffect} from "react";
+import { User } from "../types";
 
 const STORAGE_KEY = 'pawpals_community_posts_v1';
 // Use relative /api so Vite dev server proxies to backend (no direct connection to :8000 from browser)
@@ -30,9 +31,12 @@ const INITIAL_POSTS: Post[] = [
   }
 ];
 
+
+
 const App: React.FC = () => {
   // Initialize state from local storage or fallback to defaults
   const [posts, setPosts] = useState<Post[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   /** Map API blog shape (created_at, no avatar) to frontend Post shape (timestamp, avatar). */
   const parseDate = (v: unknown): Date => {
     if (v == null) return new Date();
@@ -42,6 +46,7 @@ const App: React.FC = () => {
   };
 
   const mapBlogToPost = (raw: Record<string, unknown>): Post => ({
+    user_id: localStorage.getItem('token') ?? '',
     blog_id: String(raw.blog_id ?? raw.id ?? ''),
     author: String(raw.author ?? ''),
     avatar: String(raw.avatar ?? 'https://picsum.photos/seed/user/100'),
@@ -75,14 +80,16 @@ const App: React.FC = () => {
   }, []);
 
   const addPost = async(content: string, title?:string, image?: string) => {
-    const newPost: Post = {
+    const userId = localStorage.getItem('token') ?? '';
+    const user = await getUser(userId);
+
+    const newPost = {
+      user_id: userId,
       blog_id: Math.random().toString(36).substr(2, 9),
-      author: 'You',
-      avatar: 'https://picsum.photos/seed/me/100',
+      author: user.name,
       content,
       title,
       image: image ?? undefined,
-      timestamp: new Date(),
       likes: 0
     };
 
@@ -121,17 +128,36 @@ const App: React.FC = () => {
 
     await refetchPosts();
   }
-  
+
+  const getUser = async (userId: string) => {
+    const response = await fetch(`${API_BASE}/users/me?user_id=${userId}`, { method: 'GET' });
+    if (!response.ok) {
+      throw new Error('Failed to get user');
+    }
+    const data = await response.json();
+    return data;
+  }
+
+  useEffect(() => {
+    const userId = localStorage.getItem('token') ?? '';
+    if (!userId) return;
+    getUser(userId)
+      .then((data) => setUser(data as User))
+      .catch(() => setUser(null));
+  }, []);
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-slate-50">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10 shadow-md">
-        <div className="flex items-center gap-2">
-          <div className="bg-orange-500 p-2 rounded-xl text-white">
-            <img src="https://cdn-icons-png.flaticon.com/128/2171/2171990.png" className="w-6 h-6" />
+        {user && (
+          <div className="flex items-center gap-2">
+            <div className="bg-orange-500 p-2 rounded-xl text-white">
+              <img src="https://cdn-icons-png.flaticon.com/128/2171/2171990.png" className="w-6 h-6" />
+            </div>
+            <h1 className="text-3xl font-brand font-bold text-slate-800">{user.name}</h1>
           </div>
-          <h1 className="text-3xl font-brand font-bold text-slate-800">PawPals</h1>
-        </div>
+        )}
         <nav className="hidden md:flex items-center gap-8 text-slate-500 font-large">
           <a href="#" className="text-orange-500 border-b-2 border-orange-500 py-1 text-lg font-bold">Community</a>
           <a href="#" className="hover:text-slate-800 transition-colors text-lg font-bold">Marketplace</a>
@@ -148,7 +174,7 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 flex overflow-hidden">
         {/* Left Sidebar: Blog Wall */}
-        <div className="w-500px mx-auto" style={{ backgroundColor: 'shimmering-orange' }}>
+        <div className="w-[800px] mx-auto" style={{ backgroundColor: 'shimmering-orange' }}>
           <BlogWall posts={posts} onAddPost={addPost} onDeletePost={deletePost}/>
         </div>
 

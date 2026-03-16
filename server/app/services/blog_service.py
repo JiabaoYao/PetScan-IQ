@@ -6,6 +6,7 @@ class BlogService:
     async def insert_one(self, body: CreateBlogRequest) -> str:
         blog_id = body.blog_id or str(uuid.uuid4())[:12]
         blog = Blog(
+            user_id=body.user_id,
             blog_id=blog_id,
             title=body.title or "",
             content=body.content,

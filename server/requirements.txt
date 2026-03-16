@@ -5,3 +5,4 @@ uvicorn
 beanie
 motor
 pydantic-settings
+bcrypt

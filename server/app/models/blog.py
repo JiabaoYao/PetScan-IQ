@@ -4,6 +4,7 @@ from datetime import datetime
 from beanie import Document
 
 class Reply(BaseModel):
+    user_id: str
     blog_id: str
     comment_id: str
     reply_id: str
@@ -14,6 +15,7 @@ class Reply(BaseModel):
     likes: int
 
 class Comment(BaseModel):
+    user_id: str
     blog_id: str
     comment_id: str
     content: str
@@ -25,6 +27,7 @@ class Comment(BaseModel):
 
 class CreateBlogRequest(BaseModel):
     """Request body for creating a blog (matches frontend Post shape)."""
+    user_id: str
     blog_id: Optional[str] = None  # optional; backend can generate
     author: str = "You"
     content: str
@@ -34,6 +37,7 @@ class CreateBlogRequest(BaseModel):
 
 
 class Blog(Document):
+    user_id: str
     blog_id: str
     title: str = ""
     content: str

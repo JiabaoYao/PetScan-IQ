@@ -6,12 +6,12 @@ import ReactMarkdown from 'react-markdown';
 // Backend API_URL
 const API_URL = "/api/chat";
 
-function Chatbot() {
+const Chatbot: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('')
     const [msgs, setMsgs] = useState([{"sender": "Kitty", "message": "Hello! How can I help?"}])
 
-    const handleSend = async (e) => {
+    const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
         // 1. 防止表单提交导致页面刷新
         if (e) e.preventDefault();
 
@@ -77,9 +77,6 @@ function Chatbot() {
                     </form>
                 </div>}
 
-                {/* <div className="chatbox__button" onClick={() => setIsOpen(!isOpen)}>
-                    <span className="text-2xl">{isOpen ? '🐾' : '🐈'}</span>
-                </div> */}
                 <div className="chatbox__button" onClick={() => setIsOpen(!isOpen)}>
                     <span className="text-2xl">{isOpen ? '🐾' : '🐈'}</span>
                 </div>

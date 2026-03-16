@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from app.api.chat_routes import router as chat_router
@@ -9,6 +8,8 @@ import uvicorn
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from app.models.blog import Blog, Comment, Reply
+from app.models.user import User, UserCreate, UserLogin
+from app.api.user_routes import router as user_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -28,6 +29,7 @@ app.add_middleware(
 
 app.include_router(chat_router, prefix="/api")
 app.include_router(blog_router, prefix="/api")
+app.include_router(user_router, prefix="/api")
 
 @app.on_event("startup")
 async def start_db_client():
@@ -35,16 +37,24 @@ async def start_db_client():
     database_name = os.getenv("MONGODB_DATABASE", "pet")
     client = AsyncIOMotorClient(mongodb_uri)
     database = client.get_database(database_name)
-    try:
-        await database.create_collection("blogs")
-    except Exception as e:
-        print(f"Error creating collection: {e}")
-    await init_beanie(database=database, document_models=[Blog])
+    for name in ("blogs", "users"):
+        try:
+            await database.create_collection(name)
+        except Exception as e:
+            if "already exists" not in str(e).lower():
+                print(f"Error creating collection {name}: {e}")
+    await init_beanie(database=database, document_models=[Blog, User])
     
-    
+
 @app.get("/")
+def login():
+    return {"status": "login"}
+
+
+@app.get("/me")
 def index():
-    return {"status": "ok"}
+    return {"status": "me"}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

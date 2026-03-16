@@ -1,5 +1,6 @@
 
 export interface Post {
+  user_id: string;
   blog_id: string;
   author: string;
   avatar: string;
@@ -13,4 +14,10 @@ export interface Post {
 export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
+}
+
+export interface User {
+  user_id: string;
+  email: string;
+  name: string;
 }

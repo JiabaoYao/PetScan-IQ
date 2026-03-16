@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import { Post } from '../types';
 
+
 interface BlogWallProps {
   posts: Post[];
   onAddPost: (content: string, title?: string, image?: string) => void;
